@@ -4,23 +4,36 @@ import { Form, Button } from 'react-bootstrap';
 
 const CropTypesInline = ({ onAdded }) => {
   const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleAdd = () => {
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+
+    setLoading(true);
     axios.post('https://farmer-tau.vercel.app/crop-types', { name })
       .then(() => {
         setName('');
-        onAdded(); // Refresh crop types in parent
-      });
+        onAdded();
+      })
+      .catch(err => {
+        console.error('Error adding crop type:', err);
+        alert('Failed to add crop type.');
+      })
+      .finally(() => setLoading(false));
   };
 
   return (
-    <Form className="d-flex gap-2">
+    <Form onSubmit={handleAdd} className="d-flex gap-2">
       <Form.Control
         value={name}
         onChange={e => setName(e.target.value)}
         placeholder="Enter new crop type"
+        required
       />
-      <Button onClick={handleAdd}>Add</Button>
+      <Button type="submit" disabled={loading}>
+        {loading ? 'Adding...' : 'Add'}
+      </Button>
     </Form>
   );
 };

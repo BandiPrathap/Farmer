@@ -1,29 +1,38 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Form, Button } from 'react-bootstrap'; // If using react-bootstrap
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
-const CropForm = ({ cropTypes, onCreated }) => {
+
+const CropForm = ({ cropTypes, onCreated, farmer_id}) => {
     const [form, setForm] = useState({
       crop_type_id: '',
       duration_days: '',
       estimated_yield: '',
       estimated_price: '',
-      risk_profile: ''
+      risk_profile: '',
+      farmer_id:farmer_id
     });
   
     const handleSubmit = (e) => {
       e.preventDefault();
       axios.post('https://farmer-tau.vercel.app/crops', form)
         .then(() => {
+          toast.success("Crop created successfully!");
           onCreated();
           setForm({
             crop_type_id: '',
             duration_days: '',
             estimated_yield: '',
             estimated_price: '',
-            risk_profile: ''
+            risk_profile: '',
+            farmer_id:''
           });
+        }).catch((error) => {
+          console.error("Error creating crop:", error);
+          toast.error("Failed to create crop. Please try again.");
         });
     };
   

@@ -11,7 +11,7 @@ const Farmers = ({ onAssignCrop }) => {
     phone: '',
     password: '',
     location: '',
-    crop_history: ''
+    crop_history: '',
   });
   const [registering, setRegistering] = useState(false);
   const [error, setError] = useState('');

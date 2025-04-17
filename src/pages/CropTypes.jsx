@@ -97,7 +97,7 @@ export default function CropTypes() {
           <tr>
             <th>ID</th>
             <th>Name</th>
-            <th style={{ width: '100px' }}>Actions</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -106,21 +106,23 @@ export default function CropTypes() {
               <td>{crop.id}</td>
               <td>{crop.name}</td>
               <td>
-              <Button
-                size="sm"
-                variant="info"
-                onClick={() => window.location.href = `/crop/${crop.id}/farmers`}
-              >
-                View Farmers
-              </Button>
-                <FaEdit
-                  style={{ cursor: 'pointer', marginRight: 10 }}
-                  onClick={() => handleEdit(crop)}
-                />
-                <FaTrash
-                  style={{ cursor: 'pointer', color: 'red' }}
-                  onClick={() => { setCropToDelete(crop); setShowDeleteModal(true); }}
-                />
+              <div className='d-flex gap-3'>
+                <Button
+                  size="sm"
+                  variant="info"
+                  onClick={() => window.location.href = `/crop/${crop.id}/farmers`}
+                >
+                  View Farmers
+                </Button>
+                  <FaEdit
+                    style={{ cursor: 'pointer', marginRight: 10 }}
+                    onClick={() => handleEdit(crop)}
+                  />
+                  <FaTrash
+                    style={{ cursor: 'pointer', color: 'red' }}
+                    onClick={() => { setCropToDelete(crop); setShowDeleteModal(true); }}
+                  />
+              </div>
               </td>
             </tr>
           ))}

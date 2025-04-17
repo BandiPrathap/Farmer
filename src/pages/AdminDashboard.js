@@ -38,10 +38,12 @@ const AdminDashboard = () => {
           <Modal.Title>Assign Crop to {selectedFarmer?.name}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <CropForm
-            cropTypes={cropTypes}
-            onCreated={handleCropCreated}
-          />
+        <CropForm
+          cropTypes={cropTypes}
+          onCreated={handleCropCreated}
+          farmer_id={selectedFarmer?.id}
+        />
+
           <hr />
           <h5>Add Crop Type</h5>
           <CropTypesInline onAdded={fetchCropTypes} />
