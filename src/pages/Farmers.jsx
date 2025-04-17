@@ -16,14 +16,23 @@ const Farmers = ({ onAssignCrop }) => {
   const [registering, setRegistering] = useState(false);
   const [error, setError] = useState('');
 
-  // Load data from localStorage or fetch from API
+  // Reusable fetch function
+  const fetchFarmers = async () => {
+    try {
+      const res = await axios.get('https://farmer-tau.vercel.app/farmer');
+      setFarmers(res.data);
+      localStorage.setItem('farmers', JSON.stringify(res.data));
+    } catch (err) {
+      console.error('Error fetching farmers:', err);
+    }
+  };
+
   useEffect(() => {
     const storedFarmers = localStorage.getItem('farmers');
     if (storedFarmers) {
       setFarmers(JSON.parse(storedFarmers));
     } else {
-      axios.get('https://farmer-tau.vercel.app/farmer')
-        .then(res => setFarmers(res.data));
+      fetchFarmers();
     }
   }, []);
 
@@ -31,30 +40,27 @@ const Farmers = ({ onAssignCrop }) => {
     e.preventDefault();
     setRegistering(true);
     setError('');
-  
+
     try {
       await axios.post('https://farmer-tau.vercel.app/farmer/register', newFarmer);
-  
+
       localStorage.removeItem('farmers');
-      const res = await axios.get('https://farmer-tau.vercel.app/farmer');
-      setFarmers(res.data);
-  
+      await fetchFarmers();
+
       setShowModal(false);
       setNewFarmer({ name: '', phone: '', password: '', location: '', crop_history: '' });
     } catch (err) {
       console.error(err);
       setError('Failed to register farmer');
     }
-  
+
     setRegistering(false);
   };
-  
 
   const filteredFarmers = farmers.filter(f =>
     (f.name?.toLowerCase() || '').includes(search.toLowerCase()) ||
     (f.phone || '').includes(search)
-  );  
-
+  );
 
   return (
     <>
