@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import AdminDashboard from './pages/AdminDashboard';
 import { ToastContainer } from 'react-toastify';
 import FarmersByCrop from './pages/FarmersByCrop';
+import OrderDetails from './pages/OrderDetails';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="/crop-types" element={<CropTypes />} />
             <Route path="/crops" element={<Crops />} />
             <Route path="/crop/:id/farmers" element={<FarmersByCrop />} />
+            <Route path="/order-details" element={<OrderDetails/>}/>
           </Routes>
         </div>
       </AuthProvider>
