@@ -60,7 +60,7 @@ const Crops = () => {
       // const response = await axios.post(`https://farmer-tau.vercel.app/crops/${cropId}`, formData, {
       //   headers: { 'Content-Type': 'multipart/form-data' }
       // });
-      const response = await axios.post(`https://farmer-tau.vercel.app/crops/${cropId}`, formData, {
+      const response = await axios.post(`https://farmer-tau.vercel.app/crops/${cropId}/stages`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setMessage(response.data.message);
