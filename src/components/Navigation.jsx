@@ -12,6 +12,7 @@ export default function Navigation() {
             <Nav.Link as={Link} to="/">Farmers</Nav.Link>
             <Nav.Link as={Link} to="/crop-types">Crop Types</Nav.Link>
             <Nav.Link as={Link} to="/crops">Crops</Nav.Link>
+            <Nav.Link as={Link} to="/order-details">Order Details</Nav.Link>
           </Nav>
           
         </Navbar.Collapse>

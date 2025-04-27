@@ -60,7 +60,7 @@ const Crops = () => {
       // const response = await axios.post(`https://farmer-tau.vercel.app/crops/${cropId}`, formData, {
       //   headers: { 'Content-Type': 'multipart/form-data' }
       // });
-      const response = await axios.post(`https://farmer-tau.vercel.app/crops/${cropId}`, formData, {
+      const response = await axios.post(`https://farmer-tau.vercel.app/crops/${cropId}/stages`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setMessage(response.data.message);
@@ -75,7 +75,7 @@ const Crops = () => {
   const handleViewStages = async (cropId) => {
     setError('');
     try {
-      const res = await axios.get(`https://farmer-tau.vercel.app/crops/${cropId}`);
+      const res = await axios.get(`https://farmer-tau.vercel.app/crops/${cropId}/stages`);
       setSelectedCropStages(res.data.images || []);
       setSelectedCropId(cropId);
       setShowStageModal(true);
@@ -98,7 +98,7 @@ const Crops = () => {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Crop Type</th>
+            <th>Crop Name</th>
             <th>Duration</th>
             <th>Yield</th>
             <th>Risk Profile</th>
@@ -109,7 +109,7 @@ const Crops = () => {
           {crops.map(crop => (
             <tr key={crop.id} className={selectedCropId === crop.id ? 'table-primary' : ''}>
               <td>{crop.id}</td>
-              <td>{crop.crop_type?.name || 'N/A'}</td>
+              <td>{crop.name || 'N/A'}</td>
               <td>{crop.duration_days} days</td>
               <td>{crop.estimated_yield}</td>
               <td>{crop.risk_profile}</td>
