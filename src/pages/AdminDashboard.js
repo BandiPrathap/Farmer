@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Modal} from 'react-bootstrap';
 import Farmers from './Farmers'
+import FarmersV2 from './FarmersV2';
 import CropForm from '../components/CropForm';
 import CropTypesInline from '../components/CropTypesInline';
 
@@ -30,7 +31,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="p-4">
-      <Farmers onAssignCrop={handleAssignCrop} />
+      <FarmersV2 onAssignCrop={handleAssignCrop} />
 
       {/* Assign Crop Modal */}
       <Modal show={showCropModal} onHide={() => setShowCropModal(false)}>
