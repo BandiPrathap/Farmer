@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Form, Alert, Spinner, Modal } from 'react-bootstrap';
+import { Table, Button, Form, Spinner, Modal, Alert } from 'react-bootstrap';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Crops = () => {
-    const [crops, setCrops] = useState([]);
-    const [selectedCropId, setSelectedCropId] = useState(null);
-    const [farmers, setFarmers] = useState([]);
-    const [imageFile, setImageFile] = useState(null);
-    const [stage, setStage] = useState('');
-    const [message, setMessage] = useState('');
-    const [loadingFarmers, setLoadingFarmers] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [showModal, setShowModal] = useState(false);
-    const [selectedCropStages, setSelectedCropStages] = useState([]);
-    const [showStageModal, setShowStageModal] = useState(false);
+  const [crops, setCrops] = useState([]);
+  const [selectedCropId, setSelectedCropId] = useState(null);
+  const [farmers, setFarmers] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
+  const [stage, setStage] = useState('');
+  const [loadingFarmers, setLoadingFarmers] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCropStages, setSelectedCropStages] = useState([]);
+  const [showStageModal, setShowStageModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [cropToDelete, setCropToDelete] = useState(null);
 
   useEffect(() => {
     axios.get('https://farmer-tau.vercel.app/crops')
       .then(res => setCrops(res.data))
-      .catch(() => setError('Failed to fetch crops'));
+      .catch(() => toast.error('Failed to fetch crops'));
   }, []);
 
   const fetchFarmersByCrop = async (cropId) => {
@@ -30,7 +33,7 @@ const Crops = () => {
       setFarmers(farmersData);
       setSelectedCropId(cropId);
     } catch {
-      setError('Failed to fetch farmers for crop');
+      toast.error('Failed to fetch farmers for crop');
     }
     setLoadingFarmers(false);
   };
@@ -38,62 +41,76 @@ const Crops = () => {
   const handleFileChange = (e) => {
     setImageFile(e.target.files[0]);
   };
+
   const handleStageChange = (e) => {
     setStage(e.target.value);
   };
 
-  const handleAddCropStage = async (e,cropId) => {
+  const handleAddCropStage = async (e, cropId) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
     if (!imageFile || !stage) {
-      setError('Please select an image and enter a growth stage');
+      toast.error('Please select an image and enter a growth stage');
       return;
     }
+
     const formData = new FormData();
     formData.append('image', imageFile);
     formData.append('stage', stage);
+
     try {
       setIsLoading(true);
-
-
-      // const response = await axios.post(`https://farmer-tau.vercel.app/crops/${cropId}`, formData, {
-      //   headers: { 'Content-Type': 'multipart/form-data' }
-      // });
       const response = await axios.post(`https://farmer-tau.vercel.app/crops/${cropId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setMessage(response.data.message);
+      toast.success(response.data.message || 'Stage added successfully');
       setShowModal(false);
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
-    }finally {
+      toast.error(err.response?.data?.error || err.message);
+    } finally {
       setIsLoading(false);
     }
   };
 
   const handleViewStages = async (cropId) => {
-    setError('');
     try {
       const res = await axios.get(`https://farmer-tau.vercel.app/crops/${cropId}/stages`);
       setSelectedCropStages(res.data.images || []);
       setSelectedCropId(cropId);
       setShowStageModal(true);
     } catch {
-      setError('Failed to fetch crop stages');
+      toast.error('Failed to fetch crop stages');
     }
   };
-  
 
+  const handleDeleteClick = (crop) => {
+    setCropToDelete(crop);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteCrop = async () => {
+    if (!cropToDelete) return;
+    try {
+      setIsLoading(true);
+      await axios.delete(`https://farmer-tau.vercel.app/crops/${cropToDelete.id}`);
+      toast.success('Crop deleted successfully');
+      setCrops(prev => prev.filter(c => c.id !== cropToDelete.id));
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to delete crop');
+    } finally {
+      setIsLoading(false);
+      setShowDeleteModal(false);
+      setCropToDelete(null);
+    }
+  };
 
   const selectedCrop = crops.find(c => c.id === selectedCropId);
 
   return (
     <div>
+      <ToastContainer position="top-right" />
       <h2>Crops Management</h2>
-      {error && <Alert variant="danger">{error}</Alert>}
 
-      {/* Crop List */}
+      {/* Crop Table */}
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -122,7 +139,7 @@ const Crops = () => {
                   size="sm"
                   onClick={() => {
                     setSelectedCropId(crop.id);
-                    setShowModal(true); // Open modal
+                    setShowModal(true);
                   }}
                 >
                   Add Stage
@@ -135,26 +152,31 @@ const Crops = () => {
                 >
                   View Stages
                 </Button>
-
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="me-2"
+                  onClick={() => handleDeleteClick(crop)}
+                >
+                  🗑️ Delete
+                </Button>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
 
-      
-      {/* Modal for Add Stage Form */}
+      {/* Add Stage Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Add Stage to Crop #{selectedCropId}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit = {(e)=>handleAddCropStage(e,selectedCropId)}>
+          <Form onSubmit={(e) => handleAddCropStage(e, selectedCropId)}>
             <Form.Group className="mb-2">
               <Form.Label>Crop Image</Form.Label>
               <Form.Control
                 type="file"
-                id="image"
                 accept="image/*"
                 onChange={handleFileChange}
                 disabled={isLoading}
@@ -163,8 +185,7 @@ const Crops = () => {
             <Form.Group className="mb-2">
               <Form.Label>Growth Stage</Form.Label>
               <Form.Select
-                value = {stage}
-                id="stage"
+                value={stage}
                 onChange={handleStageChange}
                 disabled={isLoading}
               >
@@ -174,17 +195,14 @@ const Crops = () => {
                 <option value="failed">Failed</option>
               </Form.Select>
             </Form.Group>
-            <Button
-              variant="success"
-              type = "submit"
-              disabled={isLoading}
-            >
+            <Button variant="success" type="submit" disabled={isLoading}>
               {isLoading ? <Spinner size="sm" animation="border" /> : 'Add Stage'}
             </Button>
           </Form>
         </Modal.Body>
       </Modal>
 
+      {/* View Stages Modal */}
       <Modal show={showStageModal} onHide={() => setShowStageModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Stages of Crop #{selectedCropId}</Modal.Title>
@@ -209,6 +227,21 @@ const Crops = () => {
         </Modal.Body>
       </Modal>
 
+      {/* Confirm Delete Modal */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Delete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to delete crop <strong>#{cropToDelete?.id} - {cropToDelete?.name}</strong>?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
+          <Button variant="danger" onClick={confirmDeleteCrop} disabled={isLoading}>
+            {isLoading ? <Spinner size="sm" animation="border" /> : 'Delete'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* Farmers List */}
       {selectedCropId && (
