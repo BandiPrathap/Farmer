@@ -3,31 +3,57 @@ import React, { useEffect, useState } from 'react';
 import { Container, Card, Button, ListGroup, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faIdCard, faPhone, faUserTag, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faIdCard, 
+  faPhone, 
+  faMapMarkerAlt, 
+  faHistory, 
+  faSignOutAlt 
+} from '@fortawesome/free-solid-svg-icons';
 
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+    const fetchFarmerDetails = async () => {
+      const token = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
 
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error('Failed to parse user:', err);
+      if (!token) {
         navigate('/login');
+        return;
       }
-    }
-    setLoading(false);
+
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        const response = await fetch(
+          `https://farmer-tau.vercel.app/farmer/${parsedUser.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch farmer details');
+        }
+
+        const farmerData = await response.json();
+        setUser(farmerData);
+        setError(null);
+      } catch (err) {
+        console.error('Fetch error:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFarmerDetails();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -37,15 +63,12 @@ const Profile = () => {
   };
 
   if (loading) return <div className="text-center mt-5">Loading...</div>;
+  if (error) return <Alert variant="danger" className="mt-5">{error}</Alert>;
   if (!user) return <Alert variant="danger" className="mt-5">Please login to view this page</Alert>;
 
   return (
     <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '90vh' }}>
       <Card className="w-100 profile-card shadow-lg" style={{ maxWidth: '800px', borderRadius: '20px' }}>
-        {/* <Card.Header className="bg-success text-white text-center py-4">
-          <h2 className="mb-0 fw-bold">Farmer Profile</h2>
-        </Card.Header> */}
-        
         <Card.Body className="p-4">
           <div className="d-flex flex-column align-items-center mb-4">
             <div className="position-relative">
@@ -57,8 +80,7 @@ const Profile = () => {
                   width: '150px', 
                   height: '150px', 
                   objectFit: 'cover', 
-                  border: '4px solid white',
-                  // transform: 'translateY(-50%)'
+                  border: '4px solid white'
                 }}
                 onError={(e) => {
                   e.target.src = 'https://via.placeholder.com/150';
@@ -84,9 +106,16 @@ const Profile = () => {
               </ListGroup.Item>
               
               <ListGroup.Item className="d-flex align-items-center">
-                <FontAwesomeIcon icon={faUserTag} className="text-success me-3" />
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="text-success me-3" />
                 <div>
-                  <strong>Role:</strong> <span className="text-capitalize">{user.role}</span>
+                  <strong>Location:</strong> {user.location}
+                </div>
+              </ListGroup.Item>
+              
+              <ListGroup.Item className="d-flex align-items-center">
+                <FontAwesomeIcon icon={faHistory} className="text-success me-3" />
+                <div>
+                  <strong>Crop History:</strong> {user.crop_history}
                 </div>
               </ListGroup.Item>
             </ListGroup>

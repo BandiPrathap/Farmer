@@ -13,7 +13,8 @@ const Register = () => {
     phone: '',
     password: '',
     location: '',
-    crop_history: ''
+    crop_history: '',
+    farmer_image: null,
   });
 
 
@@ -32,11 +33,14 @@ const Register = () => {
   data.append('password', formData.password);
   data.append('location', formData.location);
   data.append('crop_history', formData.crop_history);
+  if (formData.farmer_image) {
+      data.append('farmer_image', formData.farmer_image);
+    }
 
 
   setLoading(true);
   try {
-    await api.post('/v2/farmer/register', data, {
+    await api.post('/farmer/v2/register', data, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -108,13 +112,16 @@ const Register = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Upload Farmer Image (optional)</Form.Label>
+              <Form.Label>Upload Farmer Image</Form.Label>
               <Form.Control
                 type="file"
                 accept="image/*"
-                
+                onChange={(e) =>
+                  setFormData({ ...formData, farmer_image: e.target.files[0] })
+                }
               />
             </Form.Group>
+
 
             <Button className="w-100" type="submit" variant="success" disabled={loading}>
               {loading ? (
